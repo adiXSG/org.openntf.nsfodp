@@ -358,10 +358,11 @@ public class CompileODPMojo extends AbstractCompilerMojo {
 						}
 						
 						Path packageZip = createPackage(odpZip, updateSiteZips);
+						Path customDominoConfig = getCustomDominoConfig();
 						Optional<NSFODPContainer> spawnedContainer = Optional.empty();
 						try {
 							Path result;
-							spawnedContainer = initContainerIfNeeded(updateSites, packageZip);
+							spawnedContainer = initContainerIfNeeded(updateSites, packageZip, customDominoConfig);
 							if(spawnedContainer.isPresent()) {
 								result = compileOdpInContainer(packageZip, spawnedContainer.get());
 							} else {
@@ -467,6 +468,23 @@ public class CompileODPMojo extends AbstractCompilerMojo {
 			}
 		}
 		return packageZip;
+	}
+	
+	private Path getCustomDominoConfig() throws IOException {
+		if(log.isDebugEnabled()) {
+			log.debug(Messages.getString("CompileODPMojo.getCustomDominoConfig")); //$NON-NLS-1$
+		}
+		if(this.customDominoConfig == null)
+			return null;
+
+		Path config = this.customDominoConfig.toPath();
+		if(!Files.exists(config)) 
+			throw new IllegalArgumentException(Messages.getString("CompileODPMojo.cdcDirDoesNotExist", config.toAbsolutePath())); //$NON-NLS-1$
+		
+		if(Files.isDirectory(config)) 
+			throw new IllegalArgumentException(Messages.getString("CompileODPMojo.cdcIsADir", config.toAbsolutePath())); //$NON-NLS-1$
+		
+		return config;
 	}
 	
 	private Path compileOdpInContainer(Path packageZip, NSFODPContainer container) throws URISyntaxException, IOException {

@@ -41,6 +41,11 @@ public abstract class AbstractCompilerMojo extends AbstractEquinoxMojo {
 	@Parameter(required = false)
 	protected File[] updateSites;
 	/**
+	 * Any custom domino config (one touch setup yaml) to use when configuring container for compilation.
+	 */
+	@Parameter(required = false)
+	protected File customDominoConfig;
+	/**
 	 * Any additional JARs to include on the compilation classpath.
 	 * 
 	 * @since 2.0.0

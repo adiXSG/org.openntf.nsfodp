@@ -48,7 +48,7 @@ import com.ibm.commons.util.StringUtil;
 public class NSFODPContainer extends GenericContainer<NSFODPContainer> {
 	private static class DominoImage extends ImageFromDockerfile {
 
-		public DominoImage(Collection<Path> updateSites, Path packageZip, Collection<Path> cleanup, Log log, String baseImage) {
+		public DominoImage(Collection<Path> updateSites, Path packageZip, Path customDominoConfig, Collection<Path> cleanup, Log log, String baseImage) {
 			super("nsfodp-container:" + getMavenVersion(), true); //$NON-NLS-1$
 			
 			if(StringUtil.isNotEmpty(baseImage)) {
@@ -71,7 +71,7 @@ public class NSFODPContainer extends GenericContainer<NSFODPContainer> {
 					
 					withFileFromPath("Dockerfile", temp); //$NON-NLS-1$
 				}
-				try(InputStream is = getClass().getResourceAsStream("/container/domino-config.json")) { //$NON-NLS-1$
+				try (InputStream is = customDominoConfig != null ? Files.newInputStream(customDominoConfig) : getClass().getResourceAsStream("/container/domino-config.json")) { // $NON-NLS-1$
 					Path temp = tempDir.resolve("domino-config.json"); //$NON-NLS-1$
 					Files.copy(is, temp, StandardCopyOption.REPLACE_EXISTING);
 					withFileFromPath("domino-config.json", temp); //$NON-NLS-1$
@@ -151,8 +151,9 @@ public class NSFODPContainer extends GenericContainer<NSFODPContainer> {
 	private final Log log;
 	private final Path outputDirectory;
 
-	public NSFODPContainer(Collection<Path> updateSites, Path packageZip, Log log, Path outputDirectory, String baseImage) {
-		super(new DominoImage(updateSites, packageZip, cleanup.get(), log, baseImage));
+	public NSFODPContainer(Collection<Path> updateSites, Path packageZip, Path customDominoConfig, Log log,
+			Path outputDirectory, String baseImage) {
+		super(new DominoImage(updateSites, packageZip, customDominoConfig, cleanup.get(), log, baseImage));
 		this.log = log;
 		this.outputDirectory = outputDirectory;
 		
