@@ -47,7 +47,8 @@ public class ConfigAclEntry {
 	private boolean defaultEntry = false;
 	@XmlAttribute(name="name")
 	private String name;
-
+	@XmlAttribute(name="type")
+	private EntryType entryType;
 	@XmlAttribute(name="writepublicdocs")
 	private Boolean writePublicDocs;
 	@XmlAttribute(name="readpublicdocs")
@@ -87,6 +88,12 @@ public class ConfigAclEntry {
 	}
 	public void setName(String name) {
 		this.name = name;
+	}
+	public EntryType getEntryType() {
+		return entryType;
+	}
+	public void setEntryType(EntryType entryType) {
+		this.entryType = entryType;
 	}
 	public Boolean getWritePublicDocs() {
 		return writePublicDocs;
