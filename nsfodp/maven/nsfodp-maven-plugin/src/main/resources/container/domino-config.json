@@ -2,12 +2,14 @@
 	"serverSetup": {
 		"server": {
 			"type": "first",
-			"name": "NSFODP",
-			"domainName": "OpenNTFBuild",
+			"name": ${quote:settings.serverName},
+			"domainName": ${quote:settings.orgName},
 			"title": "NSF ODP Build Container",
-			"password": null,
+			"password": ${quote:settings.serverPassword},
 			"minPasswordLength": 0,
-			"serverTasks": "http"
+			"serverTasks": "http",
+			"useExistingServerID": ${quote:settings.useExistingServerID},
+			"IDFilePath": ${quote:settings.serverIDFilePath}
 		},
 		"network": {
 			"hostName": "nsfodp-build-container.openntf.org",
@@ -15,7 +17,7 @@
 			"enablePortCompression": true
 		},
 		"org": {
-			"orgName": "OpenNTFBuild",
+			"orgName": ${quote:settings.orgName},
 			"certifierPassword": "ThisIsATestPassword"
 		},
 		"admin": {
@@ -67,7 +69,7 @@
 						"action": "update",
 						"findDocument": {
 							"Type": "Server",
-							"ServerName": "CN=NSFODP/O=OpenNTFBuild"
+							"ServerName": "CN=${settings.serverName}/O=${settings.orgName}"
 						},
 						"items": {
 							"HTTP_HomeURL": "homepage.nsf",
@@ -86,8 +88,8 @@
 							"HTTP_SSLAnonymous": "0",
 							"HTTP_MaxActiveThreads": 550,
 							"HTTP_asynchronizeAgents": "1",
-                            "HTTP_MaxContentLength": 0,
-                            "LdISite": "1",
+							"HTTP_MaxContentLength": 0,
+							"LdISite": "1",
 							"NSDEnbld": "1",
 							"FREnbld": "1",
 							"FltRcvryNot": "LocalDomainAdmins"
@@ -99,9 +101,9 @@
 						"items": {
 							"Form": "WebSite",
 							"Type": "WebSite",
-                            "ISiteOrg": "OpenNTFBuild",
-                            "WSIsDflt": "1",
-                            "HTTP_MaxPostDataLength": "1000000"
+							"ISiteOrg": "OpenNTFBuild",
+							"WSIsDflt": "1",
+							"HTTP_MaxPostDataLength": "1000000"
 						}
 					}
 				]

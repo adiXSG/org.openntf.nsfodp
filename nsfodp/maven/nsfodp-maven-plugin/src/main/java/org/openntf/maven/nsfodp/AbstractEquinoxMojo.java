@@ -35,6 +35,7 @@ import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
+import org.openntf.maven.nsfodp.config.ContainerSetupSettings;
 import org.openntf.maven.nsfodp.container.NSFODPContainer;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
@@ -155,7 +156,18 @@ public abstract class AbstractEquinoxMojo extends AbstractMojo {
 	@Parameter(property="nsfodp.containerTlsCertPath", required=false)
 	protected String containerCertPath;
 	
-
+	/**
+	 * Specifies custom one-touch setup settings for the Domino container environment.
+	 *
+	 * <p>This parameter allows custom configuration of the containerized Domino runtime,
+	 * such as server name or server ID file to use or other container-specific
+	 * options that may be required for specialized build scenarios.</p>
+	 *
+	 * @since 4.1.0
+	 */
+	@Parameter(property="nsfodp.containerSetupSettings", required=false)
+	protected ContainerSetupSettings containerSetupSettings;
+	
 	protected boolean isRunLocally() {
 		if(this.container) {
 			return false;
@@ -182,7 +194,7 @@ public abstract class AbstractEquinoxMojo extends AbstractMojo {
 				props.setProperty("docker.cert.path", this.containerCertPath); //$NON-NLS-1$
 			}
 			
-			NSFODPContainer container = new NSFODPContainer(updateSites, packageZip, log, outputDirectory.toPath(), this.containerBaseImage);
+			NSFODPContainer container = new NSFODPContainer(updateSites, packageZip, this.containerSetupSettings, log, outputDirectory.toPath(), this.containerBaseImage);
 			container.start();
 			if(log.isInfoEnabled()) {
 				log.info(MessageFormat.format("Started container: {0}", container.getContainerName()));

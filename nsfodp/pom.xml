@@ -333,15 +333,15 @@
 					<header>license.txt</header>
 					<excludes>
 						<exclude>**/pom.xml</exclude>
-			            <exclude>**/README</exclude>
-			            <exclude>**/src/test/resources/**</exclude>
-			            <exclude>**/src/main/resources/**</exclude>
+						<exclude>**/README</exclude>
+						<exclude>**/src/test/resources/**</exclude>
+						<exclude>**/src/main/resources/**</exclude>
 						<exclude>**/build.properties</exclude>
 						<exclude>**/org/thymeleaf/**</exclude>
 						<exclude>**/com/eclipsesource/**</exclude>
-                        <exclude>**/res/SwiperDXLClean.xsl</exclude>
-                        <exclude>**/dominoschemas/*</exclude>
-                        <exclude>**/nsfodp-maven-plugin/**</exclude>
+						<exclude>**/res/SwiperDXLClean.xsl</exclude>
+						<exclude>**/dominoschemas/*</exclude>
+						<exclude>**/nsfodp-maven-plugin/**</exclude>
 						<exclude>**/com/ibm/xsp/**</exclude>
 					</excludes>
 					<properties>

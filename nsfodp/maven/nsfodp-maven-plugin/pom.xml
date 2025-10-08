@@ -27,7 +27,6 @@
 		<maven>${maven.api.version}</maven>
 	</prerequisites>
 
-
 	<repositories>
 		<repository>
 			<id>artifactory.openntf.org</id>
@@ -192,7 +191,7 @@
 			<artifactId>org.openntf.nsfodp.notesapi.darwinonapi</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		
+
 		<!--
 			Darwino Domino NAPI 
 		-->
@@ -227,7 +226,7 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-		
+
 		<!--
 			Domino default classpath 
 		-->
@@ -236,7 +235,7 @@
 			<artifactId>guava</artifactId>
 			<version>32.0.0-jre</version>
 		</dependency>
-		
+
 		<!--
 			XML binding 
 		-->

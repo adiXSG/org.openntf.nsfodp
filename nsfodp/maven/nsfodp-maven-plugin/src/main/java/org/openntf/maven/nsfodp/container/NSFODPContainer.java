@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
+import java.lang.reflect.Method;
 import java.nio.file.FileSystem;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -32,6 +33,8 @@ import java.util.Collection;
 import java.util.Properties;
 
 import org.apache.maven.plugin.logging.Log;
+import org.apache.maven.shared.utils.io.IOUtil;
+import org.openntf.maven.nsfodp.config.ContainerSetupSettings;
 import org.openntf.nsfodp.commons.NSFODPUtil;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.GenericContainer;
@@ -48,7 +51,7 @@ import com.ibm.commons.util.StringUtil;
 public class NSFODPContainer extends GenericContainer<NSFODPContainer> {
 	private static class DominoImage extends ImageFromDockerfile {
 
-		public DominoImage(Collection<Path> updateSites, Path packageZip, Collection<Path> cleanup, Log log, String baseImage) {
+		public DominoImage(Collection<Path> updateSites, Path packageZip, ContainerSetupSettings settings, Collection<Path> cleanup, Log log, String baseImage) {
 			super("nsfodp-container:" + getMavenVersion(), true); //$NON-NLS-1$
 			
 			if(StringUtil.isNotEmpty(baseImage)) {
@@ -71,11 +74,34 @@ public class NSFODPContainer extends GenericContainer<NSFODPContainer> {
 					
 					withFileFromPath("Dockerfile", temp); //$NON-NLS-1$
 				}
+				
+				// Process the template to generate domino-config.json with dynamic placeholder replacement
 				try(InputStream is = getClass().getResourceAsStream("/container/domino-config.json")) { //$NON-NLS-1$
-					Path temp = tempDir.resolve("domino-config.json"); //$NON-NLS-1$
-					Files.copy(is, temp, StandardCopyOption.REPLACE_EXISTING);
-					withFileFromPath("domino-config.json", temp); //$NON-NLS-1$
+					
+					// Read the template content"
+					String templateContent = new String(IOUtil.toString(is, "UTF-8"));
+					
+					// Use default settings if none provided
+					ContainerSetupSettings templateSettings = settings != null ? settings : new ContainerSetupSettings();
+					
+					if(templateSettings.isUseExistingServerID()) {
+						Path serverIdTemp = tempDir.resolve("server.id"); //$NON-NLS-1$
+						Path serverIdSource = Paths.get(templateSettings.getServerIDFilePath());
+						Files.copy(serverIdSource, serverIdTemp, StandardCopyOption.REPLACE_EXISTING);
+						withFileFromPath("server.id", serverIdTemp); //$NON-NLS-1$
+						templateSettings.setServerIDFilePath("/local/server.id"); //$NON-NLS-1$
+					}
+					
+					// Replace placeholders dynamically using reflection
+					String processedContent = replacePlaceholders(templateContent, templateSettings);
+					
+					// Write the processed content to temp file
+					Path dominoConfigTemp = tempDir.resolve("domino-config.json"); //$NON-NLS-1$
+					Files.write(dominoConfigTemp, processedContent.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+					withFileFromPath("domino-config.json", dominoConfigTemp); //$NON-NLS-1$
+					
 				}
+				
 				try(InputStream is = getClass().getResourceAsStream("/container/container.link")) { //$NON-NLS-1$
 					Path temp = tempDir.resolve("container.link"); //$NON-NLS-1$
 					Files.copy(is, temp, StandardCopyOption.REPLACE_EXISTING);
@@ -151,8 +177,8 @@ public class NSFODPContainer extends GenericContainer<NSFODPContainer> {
 	private final Log log;
 	private final Path outputDirectory;
 
-	public NSFODPContainer(Collection<Path> updateSites, Path packageZip, Log log, Path outputDirectory, String baseImage) {
-		super(new DominoImage(updateSites, packageZip, cleanup.get(), log, baseImage));
+	public NSFODPContainer(Collection<Path> updateSites, Path packageZip, ContainerSetupSettings settings, Log log, Path outputDirectory, String baseImage) {
+		super(new DominoImage(updateSites, packageZip, settings, cleanup.get(), log, baseImage));
 		this.log = log;
 		this.outputDirectory = outputDirectory;
 		
@@ -239,5 +265,75 @@ public class NSFODPContainer extends GenericContainer<NSFODPContainer> {
 		} catch(IOException | UnsupportedOperationException | InterruptedException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	private static String escapeJsonString(String input) {
+		if (input == null) {
+			return null;
+		}
+		return input.replace("\\", "\\\\")  // Escape backslashes
+					.replace("\"", "\\\"")  // Escape double quotes
+					.replace("\b", "\\b")   // Escape backspace
+					.replace("\f", "\\f")   // Escape form feed
+					.replace("\n", "\\n")   // Escape newline
+					.replace("\r", "\\r")   // Escape carriage return
+					.replace("\t", "\\t");  // Escape tab
+	}
+	
+	private static String quoteAndEscapeJsonString(String input) {
+		if (input == null) {
+			return "null";
+		} else {
+			return "\"" + escapeJsonString(input) + "\"";
+		}
+	}
+	
+	private static String replacePlaceholders(String template, ContainerSetupSettings settings) {
+		String result = template;
+		
+		// Use reflection to find all getter methods in the ContainerSetupSettings class
+		Method[] methods = ContainerSetupSettings.class.getDeclaredMethods();
+		for (Method method : methods) {
+			String propertyName = null;
+			
+			// Handle 'get' prefix for regular getters
+			if (method.getName().startsWith("get") && method.getName().length() > 3) {
+				propertyName = method.getName().substring(3, 4).toLowerCase() + method.getName().substring(4);
+			}
+			// Handle 'is' prefix for boolean getters
+			else if (method.getName().startsWith("is") && method.getName().length() > 2) {
+				propertyName = method.getName().substring(2, 3).toLowerCase() + method.getName().substring(3);
+			}
+			
+			if (propertyName != null) {
+				String placeholder = "${settings." + propertyName + "}"; //$NON-NLS-1$ //$NON-NLS-2$
+				try {
+					Object value = method.invoke(settings);
+					if(value == null) {
+						result = result.replace(placeholder, "null");
+					} else {
+						result = result.replace(placeholder, value.toString());
+					}
+				} catch (Exception e) {
+					throw new RuntimeException("Failed to replace placeholder: " + placeholder, e);
+				}
+				
+				placeholder = "${quote:settings." + propertyName + "}"; //$NON-NLS-1$ //$NON-NLS-2$
+				try {
+					Object value = method.invoke(settings);
+					if(value == null) {
+						result = result.replace(placeholder, "null");
+					} else if(value instanceof String) {
+						result = result.replace(placeholder, quoteAndEscapeJsonString(value.toString()));
+					} else {
+						result = result.replace(placeholder, value.toString());
+					}
+				} catch (Exception e) {
+					throw new RuntimeException("Failed to replace placeholder: " + placeholder, e);
+				}
+			}
+		}
+		
+		return result;
 	}
 }

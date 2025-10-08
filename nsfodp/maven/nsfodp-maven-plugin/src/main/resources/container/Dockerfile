@@ -13,3 +13,4 @@ COPY --chown=notes:notes domino-config.json /local/runner/
 COPY --chown=notes:notes container.link /opt/hcl/domino/notes/latest/linux/osgi/rcp/eclipse/links/container.link
 COPY --chown=notes:notes staging/plugins/* /local/eclipse/eclipse/plugins/
 COPY --chown=notes:notes JavaOptions.txt /local/JavaOptions.txt
+COPY --chown=notes:notes server[\.]id /local
