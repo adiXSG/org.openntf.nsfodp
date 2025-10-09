@@ -151,12 +151,15 @@ public class NSFODPContainer extends GenericContainer<NSFODPContainer> {
 	private final Log log;
 	private final Path outputDirectory;
 
-	public NSFODPContainer(Collection<Path> updateSites, Path packageZip, Log log, Path outputDirectory, String baseImage) {
+	public NSFODPContainer(Collection<Path> updateSites, Path packageZip, Log log, Path outputDirectory, String baseImage, String timezone) {
 		super(new DominoImage(updateSites, packageZip, cleanup.get(), log, baseImage));
 		this.log = log;
 		this.outputDirectory = outputDirectory;
 		
 		addEnv("LANG", "en_US.UTF-8"); //$NON-NLS-1$ //$NON-NLS-2$
+		if(timezone != null && !timezone.isEmpty()) {
+			addEnv("TZ", timezone); //$NON-NLS-1$ 
+		}
 		addEnv("SetupAutoConfigure", "1"); //$NON-NLS-1$ //$NON-NLS-2$
 		addEnv("SetupAutoConfigureParams", "/local/runner/domino-config.json"); //$NON-NLS-1$ //$NON-NLS-2$
 		addEnv("DOMINO_DOCKER_STDOUT", "yes"); //$NON-NLS-1$ //$NON-NLS-2$

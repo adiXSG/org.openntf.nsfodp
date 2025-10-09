@@ -155,7 +155,14 @@ public abstract class AbstractEquinoxMojo extends AbstractMojo {
 	@Parameter(property="nsfodp.containerTlsCertPath", required=false)
 	protected String containerCertPath;
 	
-
+	/**
+	 * Sets the time zone for the containerized Domino server (i.E. {@code Europe/Zurich}).
+	 * 
+	 * @since 4.1.0
+	 */
+	@Parameter(property="nsfodp.containerTimezone", required=false)
+	protected String containerTimezone;
+	
 	protected boolean isRunLocally() {
 		if(this.container) {
 			return false;
@@ -182,7 +189,7 @@ public abstract class AbstractEquinoxMojo extends AbstractMojo {
 				props.setProperty("docker.cert.path", this.containerCertPath); //$NON-NLS-1$
 			}
 			
-			NSFODPContainer container = new NSFODPContainer(updateSites, packageZip, log, outputDirectory.toPath(), this.containerBaseImage);
+			NSFODPContainer container = new NSFODPContainer(updateSites, packageZip, log, outputDirectory.toPath(), this.containerBaseImage, this.containerTimezone);
 			container.start();
 			if(log.isInfoEnabled()) {
 				log.info(MessageFormat.format("Started container: {0}", container.getContainerName()));
