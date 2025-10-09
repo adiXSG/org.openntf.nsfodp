@@ -29,7 +29,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayDeque;
@@ -112,6 +111,7 @@ public class ODPCompiler extends AbstractCompilationEnvironment {
 	private String compilerLevel = DEFAULT_COMPILER_LEVEL;
 	
 	private boolean appendTimestampToTitle = false;
+	private String timestampFormat = "yyyy-MM-dd h:mm a zzz"; //$NON-NLS-1$
 	private String templateName;
 	private String templateVersion;
 	private boolean setProductionXspOptions = false;
@@ -127,8 +127,6 @@ public class ODPCompiler extends AbstractCompilationEnvironment {
 			"-encoding", "utf-8" //$NON-NLS-1$ //$NON-NLS-2$
 		);
 	public static final String DEFAULT_COMPILER_LEVEL = "1.8"; //$NON-NLS-1$
-	
-	private static final ThreadLocal<DateFormat> TIMESTAMP = ThreadLocal.withInitial(() -> new SimpleDateFormat("yyyy-MM-dd h:mm a zzz")); //$NON-NLS-1$
 	
 	/**
 	 * Notes.ini property to set to "1" to output debug information about imported DXL
@@ -212,6 +210,30 @@ public class ODPCompiler extends AbstractCompilationEnvironment {
 		return appendTimestampToTitle;
 	}
 	
+	/**
+	 * Returns the format string used for appending a timestamp to the generated NSF's title.
+	 * <p>
+	 * The default value is {@code yyyy-MM-dd h:mm a zzz}.
+	 * </p>
+	 *
+	 * @return the timestamp format string
+	 */
+	public String getTimestampFormat() {
+		return timestampFormat;
+	}
+
+	/**
+	 * Sets the format string used for appending a timestamp to the generated NSF's title.
+	 * <p>
+	 * The default value is {@code yyyy-MM-dd h:mm a zzz}.
+	 * </p>
+	 *
+	 * @param timestampFormat the timestamp format string to use
+	 */
+	public void setTimestampFormat(String timestampFormat) {
+		this.timestampFormat = timestampFormat;
+	}
+
 	/**
 	 * Sets a name for this database to act as a master template.
 	 * 
@@ -415,7 +437,12 @@ public class ODPCompiler extends AbstractCompilationEnvironment {
 		
 						// Append a timestamp if requested
 						if(this.isAppendTimestampToTitle()) {
-							database.setTitle(database.getTitle() + " - " + TIMESTAMP.get().format(new Date())); //$NON-NLS-1$
+							try {
+								String ts = new SimpleDateFormat(this.timestampFormat).format(new Date());
+								database.setTitle(database.getTitle() + " - " + ts); //$NON-NLS-1$
+							} catch(Exception e) {
+								throw new Exception(MessageFormat.format("Cannot parse timestamp format '{0}'}", this.timestampFormat, e));
+							}
 						}
 						
 						// Set the template info if requested

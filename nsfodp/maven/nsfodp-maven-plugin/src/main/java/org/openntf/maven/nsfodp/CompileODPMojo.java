@@ -150,6 +150,13 @@ public class CompileODPMojo extends AbstractCompilerMojo {
 	private boolean appendTimestampToTitle = false;
 	
 	/**
+	 * Format to use for the timestamp added to NSF's title. {@code appendTimestampToTitle} must be set to {@code true}. Only used  Defaults to
+	 * {@code yyyy-MM-dd h:mm a zzz}.
+	 */
+	@Parameter(property="nsfodp.compiler.timestampFormat", required=false)
+	private String timestampFormat = null;
+	
+	/**
 	 * A name to set in the database for use as a master template.
 	 * 
 	 * <p>Note: this is the name used by this database when it is a template for
@@ -424,7 +431,7 @@ public class CompileODPMojo extends AbstractCompilerMojo {
 			.map(Artifact::getFile)
 			.map(File::toPath)
 			.forEach(jars::add);
-		compiler.compileOdp(odpDirectory, updateSites, jars, outputFile, compilerLevel, appendTimestampToTitle, templateName, setProductionXspOptions, odsRelease, this.compileBasicElementLotusScript);
+		compiler.compileOdp(odpDirectory, updateSites, jars, outputFile, compilerLevel, appendTimestampToTitle, timestampFormat, templateName, setProductionXspOptions, odsRelease, this.compileBasicElementLotusScript);
 	}
 	
 	// *******************************************************************************
@@ -488,6 +495,9 @@ public class CompileODPMojo extends AbstractCompilerMojo {
 				post.addHeader(NSFODPConstants.HEADER_COMPILER_LEVEL, this.compilerLevel);
 			}
 			post.addHeader(NSFODPConstants.HEADER_APPEND_TIMESTAMP, String.valueOf(this.appendTimestampToTitle));
+			if(StringUtil.isNotEmpty(this.timestampFormat)) {
+				post.addHeader(NSFODPConstants.HEADER_TIMESTAMP_FORMAT, this.timestampFormat);
+			}
 			if(this.templateName != null && !this.templateName.isEmpty()) {
 				post.addHeader(NSFODPConstants.HEADER_TEMPLATE_NAME, this.templateName);
 				post.addHeader(NSFODPConstants.HEADER_TEMPLATE_VERSION, ODPMojoUtil.calculateVersion(project));
@@ -542,6 +552,9 @@ public class CompileODPMojo extends AbstractCompilerMojo {
 				post.addHeader(NSFODPConstants.HEADER_COMPILER_LEVEL, this.compilerLevel);
 			}
 			post.addHeader(NSFODPConstants.HEADER_APPEND_TIMESTAMP, String.valueOf(this.appendTimestampToTitle));
+			if(StringUtil.isNotEmpty(this.timestampFormat)) {
+				post.addHeader(NSFODPConstants.HEADER_TIMESTAMP_FORMAT, this.timestampFormat);
+			}
 			if(this.templateName != null && !this.templateName.isEmpty()) {
 				post.addHeader(NSFODPConstants.HEADER_TEMPLATE_NAME, this.templateName);
 				post.addHeader(NSFODPConstants.HEADER_TEMPLATE_VERSION, ODPMojoUtil.calculateVersion(project));
