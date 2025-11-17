@@ -46,6 +46,10 @@ public class FileResource extends AbstractSplitDesignElement {
 		this(dataFile, null, null, null);
 	}
 	
+	public FileResource(Path dataFile, Function<Path, String> nameProvider) {
+		this(dataFile, null, null, nameProvider);
+	}
+	
 	public FileResource(Path dataFile, boolean copyToClasses) {
 		super(dataFile);
 		this.flags = null;
