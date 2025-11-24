@@ -95,9 +95,9 @@ public class OnDiskProject {
 			new GlobMatcher(".classpath", path -> new FileResource(path, "~C4gP", null, p -> ODPUtil.toBasicFilePath(baseDir, p))), //$NON-NLS-1$ //$NON-NLS-2$
 			new GlobMatcher(".settings/**", path -> new FileResource(path, "~C4gP", null, p -> ODPUtil.toBasicFilePath(baseDir, p))), //$NON-NLS-1$ //$NON-NLS-2$
 			new GlobMatcher("AppProperties/xspdesign.properties", path -> new FileResource(path, "~C4g", null, p -> ODPUtil.toBasicFilePath(baseDir, p), p -> "xspdesign.properties")), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-			new GlobMatcher("Code/Jars/**", path -> new FileResource(path, p -> p.getFileName().toString())), //$NON-NLS-1$
+			new GlobMatcher("Code/Jars/**", path -> new FileResource(path, "34567Cg~,", null, p -> p.getFileName().toString())), //$NON-NLS-1$
 			new GlobMatcher("Code/Java/**", path ->  //$NON-NLS-1$
-				path.toString().endsWith(".java") || path.toString().endsWith(AbstractSplitDesignElement.EXT_METADATA) ? null : new FileResource(path, true) //$NON-NLS-1$
+				path.toString().endsWith(".java") || path.toString().endsWith(AbstractSplitDesignElement.EXT_METADATA) ? null : new FileResource(path, "34567Cg~[", null, p -> p.getFileName().toString(), true) //$NON-NLS-1$
 			),
 			new GlobMatcher("Code/ScriptLibraries/*.js", path -> new JavaScriptLibrary(path)), //$NON-NLS-1$
 			new GlobMatcher("Code/ScriptLibraries/*.jss", path -> new ServerJavaScriptLibrary(path)), //$NON-NLS-1$

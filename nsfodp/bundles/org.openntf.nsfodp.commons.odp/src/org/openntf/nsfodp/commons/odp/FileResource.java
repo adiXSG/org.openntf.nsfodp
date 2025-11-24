@@ -50,26 +50,25 @@ public class FileResource extends AbstractSplitDesignElement {
 		this(dataFile, null, null, nameProvider);
 	}
 	
-	public FileResource(Path dataFile, boolean copyToClasses) {
-		super(dataFile);
-		this.flags = null;
-		this.flagsExt = null;
-		this.nameProvider = null;
-		this.pathProvider = null;
-		this.copyToClasses = copyToClasses;
-	}
-	
 	public FileResource(Path dataFile, String flags, String flagsExt, Function<Path, String> nameProvider) {
 		this(dataFile, flags, flagsExt, nameProvider, nameProvider);
 	}
 	
+	public FileResource(Path dataFile, String flags, String flagsExt, Function<Path, String> nameProvider, boolean copyToClasses) {
+		this(dataFile, flags, flagsExt, nameProvider, nameProvider, copyToClasses);
+	}
+	
 	public FileResource(Path dataFile, String flags, String flagsExt, Function<Path, String> nameProvider, Function<Path, String> pathProvider) {
+		this(dataFile, flags, flagsExt, nameProvider, pathProvider, false);
+	}
+	
+	public FileResource(Path dataFile, String flags, String flagsExt, Function<Path, String> nameProvider, Function<Path, String> pathProvider, boolean copyToClasses) {
 		super(dataFile);
 		this.flags = flags;
 		this.flagsExt = flagsExt;
 		this.nameProvider = nameProvider;
-		this.copyToClasses = false;
-		this.pathProvider = nameProvider;
+		this.pathProvider = pathProvider;
+		this.copyToClasses = copyToClasses;
 	}
 	
 	@Override
